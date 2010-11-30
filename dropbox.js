@@ -233,86 +233,6 @@ dropbox.oauthRequest = function(param1,param2,callback) {
 
 
 
-dropbox.oauthRequest2 = function(param1,param2,callback) {
-	//If the token wasn't defined in the function call, then use the access token
-	if (!param1.token) {
-		param1.token = dropbox.accessToken;
-	}
-	if (!param1.tokenSecret) {
-		param1.tokenSecret = dropbox.accessTokenSecret;
-	}
-	
-	//If type isn't defined, it's JSON
-	if (!param1.type) {
-		param1.type = "json";
-	}
-	
-	//If method isn't defined, assume it's GET
-	if (!param1.method) {
-		param1.method = "GET";
-	}
-	
-	//Define the accessor
-	accessor = {
-		consumerSecret: dropbox.consumerSecret,
-	};
-	
-	//Outline the message
-	message = {
-		action: param1.url,
-	    method: param1.method,
-	    parameters: [
-	      	["oauth_consumer_key", dropbox.consumerKey],
-	      	["oauth_signature_method","HMAC-SHA1"]
-	  	]
-	};
-	
-	//Only add tokens to the request if they're wanted (vars not passed as true)
-	if (param1.token != true) {
-		message.parameters.push(["oauth_token",param1.token]);
-	}
-	if (param1.tokenSecret != true) {
-		accessor.tokenSecret = param1.tokenSecret;
-	}
-	
-
-	
-	//Timestamp and sign the OAuth request
-	OAuth.setTimestampAndNonce(message);
-	OAuth.SignatureMethod.sign(message, accessor);
-	
-	//Post the OAuth request
-	var xhr = new XMLHttpRequest();
-	
-  
-	xhr.open(message.method, message.action, true);
-
-  xhr.setRequestHeader('Authorization', OAuth.getAuthorizationHeader('',message.parameters));
-  
-  console.log(OAuth.getAuthorizationHeader());
-  
-	//xhr.setRequestHeader('content-type','application/octet-stream');
-	//xhr.setRequestHeader('Content-Disposition', 'form-data; name=file; filename=testing.txt');
-	
-	
-	var bb = new BlobBuilder();
-	bb.append('asdfasdfasdfasdfasdf');
-	
-	var blob = bb.getBlob();
-	blob.name = 'blahblah.txt'
-	
-	
-	var fd = new FormData();
-	
-	fd.append('file', blob);
-	
-	xhr.onload = function(){
-	  console.log(xhr.responseText);
-	  callback(xhr.responseText);
-	}
-  xhr.send(fd)
-}
-
 //Function to store data (tokens/cache) using either cookies or HTML5, depending on choice
 dropbox.storeData = function(name,data) {
 	//Escape data to be saved
@@ -479,14 +399,90 @@ dropbox.getThumbnail = function(path,size,callback) {
 
 
 //Function to upload a file
-dropbox.uploadFile = function(path,file,callback) {
-	dropbox.oauthRequest2({
+
+
+dropbox.uploadFile = function(path, file, callback) {
+
+  var param1 = {
 		url: "http://api-content.dropbox.com/0/files/" + dropbox.accessType + "/" + path,
 		type: "text",
 		method: "POST"
-	}, [["file",file]], function(data) {
-		callback(data);
-	});
+	}
+
+	//If the token wasn't defined in the function call, then use the access token
+	param1.token = dropbox.accessToken;
+	param1.tokenSecret = dropbox.accessTokenSecret;
+	param1.type = "text";
+	//Define the accessor
+	accessor = {
+		consumerSecret: dropbox.consumerSecret,
+	};
+	
+	//Outline the message
+	message = {
+		action: param1.url,
+	    method: param1.method,
+	    parameters: [
+	      	["oauth_consumer_key", dropbox.consumerKey],
+	      	["oauth_signature_method","HMAC-SHA1"]
+	  	]
+	};
+	
+	//Only add tokens to the request if they're wanted (vars not passed as true)
+	if (param1.token != true) {
+		message.parameters.push(["oauth_token",param1.token]);
+	}
+	if (param1.tokenSecret != true) {
+		accessor.tokenSecret = param1.tokenSecret;
+	}
+
+	//Timestamp and sign the OAuth request
+	OAuth.setTimestampAndNonce(message);
+	OAuth.SignatureMethod.sign(message, accessor);
+	
+	//Post the OAuth request
+	var xhr = new XMLHttpRequest();
+
+/*
+  var params = OAuth.getParameterMap(message.parameters), str = [];
+  for(var i in params)
+    str.push(encodeURIComponent(i) +'=' + encodeURIComponent(params[i]));
+  message.action += '?'+str.join('&');
+*/	
+
+	xhr.open(message.method, message.action, true);
+	//http://demos.hacks.mozilla.org/openweb/imageUploader/js/extends/xhr.js
+	
+	xhr.setRequestHeader('Authorization', OAuth.getAuthorizationHeader('http://api-content.dropbox.com/',message.parameters));
+
+
+  var BOUNDARY = "---------------------------1966284435497298061834782736";
+  var rn = "\r\n";
+  var req = "--" + BOUNDARY;
+  
+  req += rn + "Content-Disposition: form-data; name=\"file\"";
+
+  var bin = 'blah blah this is stuff meow i am a kitteh';
+  
+  req += "; filename=\"" + file + "\"" + rn + "Content-type: application/octet-stream";
+  req += rn + rn + bin + rn + "--" + BOUNDARY;
+  
+  /*
+  for (var i in params) {
+    req += rn + "Content-Disposition: form-data; name=\"" + i + "\"";
+    req += rn + rn + params[i] + rn + "--" + BOUNDARY;
+  }*/
+  req += "--";
+
+  xhr.setRequestHeader("Content-Type", "multipart/form-data; boundary=" + BOUNDARY);
+  xhr.send(req);
+	
+	xhr.onload = function(){
+	  console.log(xhr.responseText);
+	  callback(xhr.responseText);
+	}
+	
+	
 }
 
 //dropbox.getThumbnail('dropbox/Photos/rgbSampleAll.png','small',function(){console.log(arguments)})
