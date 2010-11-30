@@ -1,0 +1,11 @@
+{
+  "name": "Dropbox Demo",
+  "version": "1.0",
+  "description": "Use Dropbox.",
+  "permissions": [
+    "http://api.dropbox.com/",
+    "http://api-content.dropbox.com/",
+    "tabs"
+  ],
+  "background_page": "background.html"
+}
