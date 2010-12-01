@@ -1,0 +1,20 @@
+Based on https://github.com/kenotron/chromepad but actually works
+
+
+var dropbox = new ModernDropbox("yoru keys","more keys"); 
+
+//because i have a theory that inserting random typos makes you remeber it more
+
+Methods:
+
+    getAccountInfo(callback)
+
+    getDirectoryContents(path, callback)
+
+    getDirectoryMetadata(path, callback)
+
+    getFileContents(path, callback)
+
+    logOutDropbox()
+
+    putFileContents(path, filename, content, callback)

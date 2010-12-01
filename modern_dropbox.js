@@ -188,7 +188,6 @@ var ModernDropbox = function(consumerKey, consumerSecret) {
 					_sendOauthRequest(message, {
 						type: "text",
 						success: (function(data) {
-						  console.log('yay success', data);
 							if (!data) {
 								data = "";
 							}
@@ -231,7 +230,6 @@ var ModernDropbox = function(consumerKey, consumerSecret) {
 						}).bind(this)
 					});
 				} else {
-				  console.log('part twoooh');
 					var message = _createOauthRequest("https://api.getdropbox.com/" + _dropboxApiVersion + "/oauth/access_token", {
 						token: _tokens["requestToken"],
 						tokenSecret: _tokens["requestTokenSecret"]
